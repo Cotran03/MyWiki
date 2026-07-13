@@ -1,0 +1,28 @@
+/.agents/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+/.tmp/
+
+# Virtual environments and local configuration
+.venv/
+.env
+
+# Runtime data
+/instance/
+/uploads/
+**/instance/
+/.pytest-run-*/
+/pytest-cache-files-*/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

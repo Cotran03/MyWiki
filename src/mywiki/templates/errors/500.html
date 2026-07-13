@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}서버 오류 — MyWiki{% endblock %}
+{% block content %}
+<section class="error-page">
+    <span class="error-code">500</span>
+    <h1 class="h2">요청을 처리하지 못했습니다.</h1>
+    <p class="text-body-secondary">잠시 뒤 다시 시도해 주세요. 문제가 계속되면 요청 ID와 함께 관리자에게 알려 주세요.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">홈으로 돌아가기</a>
+</section>
+{% endblock %}

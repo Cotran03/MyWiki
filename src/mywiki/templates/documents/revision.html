@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}revision {{ revision.revision_no }} — MyWiki{% endblock %}
+
+{% block content %}
+<nav aria-label="현재 위치" class="mb-4">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.detail', owner_username=document.wiki.owner.username, document_id=document.id) }}">{{ document.title }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.history', owner_username=document.wiki.owner.username, document_id=document.id) }}">변경 이력</a></li>
+        <li class="breadcrumb-item active" aria-current="page">revision {{ revision.revision_no }}</li>
+    </ol>
+</nav>
+<header class="document-header">
+    <div>
+        <p class="eyebrow">PAST REVISION</p>
+        <h1 class="h2">{{ revision.title }}</h1>
+        <p class="text-body-secondary mb-0">revision {{ revision.revision_no }} · {{ revision.edit_summary or '편집 요약 없음' }}</p>
+    </div>
+    {% if revision.revision_no != document.current_revision_no and not document.is_trashed %}
+        <form action="{{ url_for('documents.restore_history', owner_username=document.wiki.owner.username, document_id=document.id, revision_no=revision.revision_no) }}" method="post">
+            {{ form.hidden_tag() }}
+            <button class="btn btn-primary" type="submit">이 버전을 새 revision으로 복구</button>
+        </form>
+    {% endif %}
+</header>
+<div class="wiki-content revision-preview mt-5">{{ rendered_body }}</div>
+{% endblock %}

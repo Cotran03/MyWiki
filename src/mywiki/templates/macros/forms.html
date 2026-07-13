@@ -1,0 +1,16 @@
+{% macro field(field, class_name="form-control", help_text=None, rows=None) -%}
+    <div class="mb-3">
+        {{ field.label(class="form-label fw-semibold") }}
+        {% if rows %}
+            {{ field(class=class_name + (" is-invalid" if field.errors else ""), rows=rows, aria_describedby=field.id + "-help") }}
+        {% else %}
+            {{ field(class=class_name + (" is-invalid" if field.errors else ""), aria_describedby=field.id + "-help") }}
+        {% endif %}
+        {% if help_text %}
+            <div id="{{ field.id }}-help" class="form-text">{{ help_text }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+            <div class="invalid-feedback d-block" role="alert">{{ error }}</div>
+        {% endfor %}
+    </div>
+{%- endmacro %}

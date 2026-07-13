@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} 이력 — MyWiki{% endblock %}
+
+{% block content %}
+<nav aria-label="현재 위치" class="mb-4">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.detail', owner_username=document.wiki.owner.username, document_id=document.id) }}">{{ document.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">변경 이력</li>
+    </ol>
+</nav>
+<header class="page-header">
+    <p class="eyebrow">REVISION HISTORY</p>
+    <h1 class="h2">{{ document.title }} 변경 이력</h1>
+    <p class="text-body-secondary mb-0">이력은 소유자만 볼 수 있으며 과거 revision은 변경되지 않습니다.</p>
+</header>
+
+<ol class="timeline mt-4">
+    {% for revision in revisions %}
+        <li class="timeline-item">
+            <span class="timeline-dot" aria-hidden="true"></span>
+            <div class="timeline-card">
+                <div class="d-flex flex-wrap justify-content-between gap-2">
+                    <div>
+                        <strong>revision {{ revision.revision_no }}</strong>
+                        <span class="badge text-bg-light border ms-1">{{ revision.operation }}</span>
+                    </div>
+                    <time class="small text-body-secondary" datetime="{{ revision.created_at.isoformat() }}">
+                        {{ revision.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </time>
+                </div>
+                <p class="mb-2 mt-2">{{ revision.edit_summary or '편집 요약 없음' }}</p>
+                <div class="small text-body-secondary mb-3">{{ revision.edited_by.display_name }} · {{ revision.title }}</div>
+                <a class="btn btn-quiet btn-sm" href="{{ url_for('documents.revision_detail', owner_username=document.wiki.owner.username, document_id=document.id, revision_no=revision.revision_no) }}">내용 보기</a>
+            </div>
+        </li>
+    {% endfor %}
+</ol>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}휴지통 — MyWiki{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <p class="eyebrow">TRASH</p>
+    <h1 class="h2">휴지통</h1>
+    <p class="text-body-secondary mb-0">문서는 삭제 후 30일 동안 보관되며 이곳에서는 소유자만 볼 수 있습니다.</p>
+</header>
+
+{% if documents %}
+    <div class="document-list mt-4">
+        {% for document in documents %}
+            <div class="document-row">
+                <span class="document-icon" aria-hidden="true">×</span>
+                <span class="document-main">
+                    <a class="stretched-link text-reset text-decoration-none" href="{{ url_for('documents.detail', owner_username=document.wiki.owner.username, document_id=document.id) }}">
+                        <strong>{{ document.title }}</strong>
+                    </a>
+                    <span class="document-meta">영구 삭제 예정 {{ document.purge_after.strftime('%Y-%m-%d') }}</span>
+                </span>
+                <form class="position-relative z-2" action="{{ url_for('documents.restore_trash', owner_username=document.wiki.owner.username, document_id=document.id) }}" method="post">
+                    {{ form.hidden_tag() }}
+                    <button class="btn btn-quiet btn-sm" type="submit">복구</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state mt-4">
+        <h2 class="h5">휴지통이 비어 있습니다</h2>
+        <p class="text-body-secondary mb-0">삭제한 문서가 여기에 표시됩니다.</p>
+    </div>
+{% endif %}
+{% endblock %}

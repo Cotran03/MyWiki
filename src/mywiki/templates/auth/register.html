@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import field %}
+
+{% block title %}회원가입 — MyWiki{% endblock %}
+
+{% block content %}
+<section class="auth-card mx-auto">
+    <div class="mb-4">
+        <p class="eyebrow">CREATE YOUR WIKI</p>
+        <h1 class="h2">개인 위키 만들기</h1>
+        <p class="text-body-secondary">계정을 만들면 비공개 위키 하나가 자동으로 준비됩니다.</p>
+    </div>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.username, help_text="URL에도 사용되며 MVP에서는 변경할 수 없습니다.") }}
+        {{ field(form.display_name) }}
+        {{ field(form.email) }}
+        {{ field(form.password, help_text="12자 이상의 긴 암호문을 권장합니다.") }}
+        {{ field(form.password_confirm) }}
+        {{ form.submit(class="btn btn-primary w-100 py-2") }}
+    </form>
+    <p class="small text-center text-body-secondary mt-4 mb-0">
+        이미 계정이 있나요? <a href="{{ url_for('auth.login') }}">로그인</a>
+    </p>
+</section>
+{% endblock %}

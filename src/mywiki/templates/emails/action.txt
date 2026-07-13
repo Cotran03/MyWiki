@@ -1,0 +1,10 @@
+안녕하세요, {{ display_name }}님.
+
+{{ explanation }}
+
+{{ action_label }}:
+{{ action_url }}
+
+본인이 요청하지 않았다면 이 메일을 무시해 주세요.
+
+MyWiki

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}검색 — MyWiki{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <p class="eyebrow">SEARCH</p>
+    <h1 class="h2">문서 검색</h1>
+    <p class="text-body-secondary mb-0">내 문서와 공유받은 문서의 제목·본문·태그만 검색합니다.</p>
+</header>
+
+<form class="search-page-form mt-4" action="{{ url_for('documents.search') }}" method="get" role="search">
+    <label class="visually-hidden" for="page-search">검색어</label>
+    <div class="input-group input-group-lg">
+        <input class="form-control" id="page-search" name="q" type="search" value="{{ query }}" placeholder="검색어를 입력하세요" autofocus>
+        <button class="btn btn-primary" type="submit">검색</button>
+    </div>
+</form>
+
+{% if query %}
+    <section class="mt-5" aria-labelledby="results-heading">
+        <div class="section-heading">
+            <h2 class="h5 mb-0" id="results-heading">“{{ query }}” 검색 결과</h2>
+            <span class="small text-body-secondary">{{ documents|length }}개</span>
+        </div>
+        {% if documents %}
+            <div class="document-list mt-3">
+                {% for document in documents %}
+                    <a class="document-row" href="{{ url_for('documents.detail', owner_username=document.wiki.owner.username, document_id=document.id) }}">
+                        <span class="document-icon" aria-hidden="true">#</span>
+                        <span class="document-main">
+                            <strong>{{ document.title }}</strong>
+                            <span class="document-meta">@{{ document.wiki.owner.username }}</span>
+                        </span>
+                        <span class="badge text-bg-light border">{{ roles[document.id] }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state mt-3">
+                <h3 class="h5">검색 결과가 없습니다</h3>
+                <p class="text-body-secondary mb-0">다른 검색어를 사용하거나 새 문서를 만들어 보세요.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endif %}
+{% endblock %}

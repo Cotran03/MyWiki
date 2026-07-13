@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import field %}
+
+{% block title %}{{ heading }} — MyWiki{% endblock %}
+
+{% block content %}
+<section class="auth-card mx-auto">
+    <h1 class="h2 mb-2">{{ heading }}</h1>
+    <p class="text-body-secondary mb-4">등록한 이메일을 입력해 주세요. 계정 존재 여부와 관계없이 같은 안내를 표시합니다.</p>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.email) }}
+        {{ form.submit(class="btn btn-primary w-100 py-2") }}
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}MyWiki — 나만의 지식 공간{% endblock %}
+
+{% block content %}
+<section class="hero-section text-center mx-auto">
+    <div class="hero-eyebrow">PRIVATE KNOWLEDGE, SHARED WITH INTENT</div>
+    <h1 class="display-4 fw-bold text-balance">생각은 자유롭게 기록하고,<br>필요한 문서만 함께 보세요.</h1>
+    <p class="lead text-body-secondary mx-auto mt-4">
+        MyWiki는 Notion의 차분한 작성 경험과 위키의 연결·변경 이력을 결합한 개인 지식 공간입니다.
+        모든 문서는 비공개로 시작합니다.
+    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+        <a class="btn btn-primary btn-lg px-4" href="{{ url_for('auth.register') }}">무료로 시작하기</a>
+        <a class="btn btn-outline-secondary btn-lg px-4" href="{{ url_for('auth.login') }}">로그인</a>
+    </div>
+</section>
+
+<section class="feature-grid" aria-label="주요 기능">
+    <article class="feature-card">
+        <span class="feature-number">01</span>
+        <h2 class="h5">개인 위키</h2>
+        <p>가입과 동시에 나만의 비공개 위키가 만들어집니다.</p>
+    </article>
+    <article class="feature-card">
+        <span class="feature-number">02</span>
+        <h2 class="h5">선택적 공유</h2>
+        <p>문서마다 열람자와 편집자를 따로 지정하고 언제든 회수합니다.</p>
+    </article>
+    <article class="feature-card">
+        <span class="feature-number">03</span>
+        <h2 class="h5">안전한 이력</h2>
+        <p>모든 변경을 revision으로 남기고 과거 내용을 새 버전으로 복구합니다.</p>
+    </article>
+</section>
+{% endblock %}

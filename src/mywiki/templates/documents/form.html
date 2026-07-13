@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import field %}
+
+{% block title %}{{ heading }} — MyWiki{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <p class="eyebrow">MARKDOWN EDITOR</p>
+    <h1 class="h2">{{ heading }}</h1>
+    <p class="text-body-secondary mb-0">Ctrl+S로 저장할 수 있습니다. Markdown 안의 원시 HTML은 실행되지 않습니다.</p>
+</header>
+
+<form class="editor-form mt-4" method="post" novalidate data-save-shortcut>
+    {{ form.hidden_tag() }}
+    {{ field(form.title) }}
+    <div class="mb-3">
+        {{ form.body_markdown.label(class="form-label fw-semibold") }}
+        {{ form.body_markdown(
+            class="form-control markdown-editor" + (" is-invalid" if form.body_markdown.errors else ""),
+            rows=18,
+            placeholder="# 제목\n\nMarkdown으로 내용을 작성하세요."
+        ) }}
+        {% for error in form.body_markdown.errors %}
+            <div class="invalid-feedback d-block" role="alert">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {{ field(form.tags, help_text="쉼표로 구분해 최대 20개까지 입력하세요.") }}
+    {{ field(form.edit_summary, help_text="비워 두면 기본 편집 사유가 기록됩니다.") }}
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        {{ form.submit(class="btn btn-primary px-4") }}
+        {% if document %}
+            <a class="btn btn-quiet" href="{{ url_for('documents.detail', owner_username=document.wiki.owner.username, document_id=document.id) }}">취소</a>
+            <span class="small text-body-secondary ms-auto">편집 기준 revision {{ document.current_revision_no }}</span>
+        {% else %}
+            <a class="btn btn-quiet" href="{{ url_for('main.index') }}">취소</a>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

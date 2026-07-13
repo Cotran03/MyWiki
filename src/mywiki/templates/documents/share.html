@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import field %}
+
+{% block title %}{{ document.title }} 공유 — MyWiki{% endblock %}
+
+{% block content %}
+<nav aria-label="현재 위치" class="mb-4">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('documents.detail', owner_username=document.wiki.owner.username, document_id=document.id) }}">{{ document.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">공유</li>
+    </ol>
+</nav>
+<header class="page-header">
+    <p class="eyebrow">DOCUMENT ACCESS</p>
+    <h1 class="h2">문서 공유</h1>
+    <p class="text-body-secondary mb-0">“{{ document.title }}” 문서만 지정한 회원에게 공개합니다.</p>
+</header>
+
+<div class="settings-grid mt-4">
+    <section class="settings-card" aria-labelledby="invite-heading">
+        <h2 class="h5" id="invite-heading">회원 초대</h2>
+        <p class="small text-body-secondary">이메일 인증을 마친 기존 회원의 사용자명을 입력하세요.</p>
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+            {{ field(form.username) }}
+            {{ field(form.access_level, class_name="form-select") }}
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </section>
+
+    <section class="settings-card" aria-labelledby="members-heading">
+        <div class="section-heading mb-3">
+            <h2 class="h5 mb-0" id="members-heading">접근 가능한 회원</h2>
+            <span class="small text-body-secondary">{{ permissions|length }}명</span>
+        </div>
+        <div class="permission-list">
+            <div class="permission-row">
+                <div>
+                    <strong>{{ current_user.display_name }}</strong>
+                    <span class="d-block small text-body-secondary">@{{ current_user.username }}</span>
+                </div>
+                <span class="badge text-bg-primary">소유자</span>
+            </div>
+            {% for permission in permissions %}
+                <div class="permission-row">
+                    <div>
+                        <strong>{{ permission.grantee.display_name }}</strong>
+                        <span class="d-block small text-body-secondary">@{{ permission.grantee.username }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge text-bg-light border">{{ permission.access_level }}</span>
+                        <form action="{{ url_for('documents.revoke_share', owner_username=document.wiki.owner.username, document_id=document.id, grantee_id=permission.grantee_id) }}" method="post">
+                            {{ revoke_form.hidden_tag() }}
+                            <button class="btn btn-link btn-sm text-danger" type="submit">회수</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

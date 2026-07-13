@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}편집 충돌 — MyWiki{% endblock %}
+{% block content %}
+<section class="error-page">
+    <span class="error-code">409</span>
+    <h1 class="h2">그사이 문서가 변경되었습니다.</h1>
+    <p class="text-body-secondary">다른 편집 내용을 덮어쓰지 않도록 저장을 중단했습니다. 최신 문서를 다시 열고 변경 내용을 합쳐 주세요.</p>
+    <button class="btn btn-primary" type="button" data-history-back>이전 화면으로 돌아가기</button>
+</section>
+{% endblock %}

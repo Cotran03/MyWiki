@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import field %}
+
+{% block title %}로그인 — MyWiki{% endblock %}
+
+{% block content %}
+<section class="auth-card mx-auto">
+    <div class="mb-4">
+        <p class="eyebrow">WELCOME BACK</p>
+        <h1 class="h2">로그인</h1>
+        <p class="text-body-secondary">내 위키에서 이어서 기록하세요.</p>
+    </div>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.identity) }}
+        {{ field(form.password) }}
+        <div class="form-check mb-3">
+            {{ form.remember(class="form-check-input") }}
+            {{ form.remember.label(class="form-check-label") }}
+        </div>
+        {{ form.submit(class="btn btn-primary w-100 py-2") }}
+    </form>
+    <div class="auth-links mt-4">
+        <a href="{{ url_for('auth.forgot_password') }}">비밀번호를 잊었나요?</a>
+        <a href="{{ url_for('auth.resend_verification') }}">인증 메일 다시 받기</a>
+        <a href="{{ url_for('auth.register') }}">새 계정 만들기</a>
+    </div>
+</section>
+{% endblock %}

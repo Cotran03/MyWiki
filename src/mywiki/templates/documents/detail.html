@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} — MyWiki{% endblock %}
+
+{% block content %}
+<article>
+    <nav aria-label="현재 위치" class="mb-4">
+        <ol class="breadcrumb small mb-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">{{ document.wiki.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ document.title }}</li>
+        </ol>
+    </nav>
+
+    {% if document.is_trashed %}
+        <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2" role="status">
+            <span>이 문서는 휴지통에 있으며 공유 사용자는 접근할 수 없습니다.</span>
+            <form action="{{ url_for('documents.restore_trash', owner_username=document.wiki.owner.username, document_id=document.id) }}" method="post">
+                {{ delete_form.hidden_tag() }}
+                <button class="btn btn-warning btn-sm" type="submit">문서 복구</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <header class="document-header">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge text-bg-light border">{{ role }}</span>
+                <span class="small text-body-secondary">revision {{ document.current_revision_no }}</span>
+            </div>
+            <h1 class="document-title">{{ document.title }}</h1>
+            <p class="text-body-secondary small mb-0">
+                @{{ document.wiki.owner.username }} · 마지막 수정 {{ document.updated_at.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+        </div>
+        {% if not document.is_trashed %}
+            <div class="document-actions">
+                {% if role in ['owner', 'editor'] %}
+                    <a class="btn btn-primary btn-sm" href="{{ url_for('documents.edit', owner_username=document.wiki.owner.username, document_id=document.id) }}">편집</a>
+                {% endif %}
+                {% if role == 'owner' %}
+                    <a class="btn btn-quiet btn-sm" href="{{ url_for('documents.share', owner_username=document.wiki.owner.username, document_id=document.id) }}">공유</a>
+                    <a class="btn btn-quiet btn-sm" href="{{ url_for('documents.history', owner_username=document.wiki.owner.username, document_id=document.id) }}">이력</a>
+                    <form action="{{ url_for('documents.trash', owner_username=document.wiki.owner.username, document_id=document.id) }}" method="post">
+                        {{ delete_form.hidden_tag() }}
+                        <button class="btn btn-outline-danger btn-sm" type="submit">휴지통</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    </header>
+
+    {% if document.tags %}
+        <div class="tag-list" aria-label="태그">
+            {% for tag in document.tags %}
+                <a class="tag" href="{{ url_for('documents.search', q=tag.name) }}">#{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="wiki-content mt-5">
+        {{ rendered_body }}
+    </div>
+</article>
+{% endblock %}

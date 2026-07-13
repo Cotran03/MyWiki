@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}권한 없음 — MyWiki{% endblock %}
+{% block content %}
+<section class="error-page">
+    <span class="error-code">403</span>
+    <h1 class="h2">이 작업을 할 권한이 없습니다.</h1>
+    <p class="text-body-secondary">문서는 볼 수 있지만 현재 계정의 역할로는 요청한 변경을 수행할 수 없습니다.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.index') }}">홈으로 돌아가기</a>
+</section>
+{% endblock %}
