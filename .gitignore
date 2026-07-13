@@ -4,19 +4,43 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
+dist/
+.mypy_cache/
+.pyright/
 .pytest_cache/
 .ruff_cache/
+.tox/
+.nox/
 .coverage
+.coverage.*
+coverage.xml
+junit.xml
 htmlcov/
 /.tmp/
 
 # Virtual environments and local configuration
 .venv/
 .env
+.env.*
+!.env.example
+.flaskenv
+.pgpass
+*.key
+*.p12
+*.pfx
 
 # Runtime data
 /instance/
 /uploads/
+/backups/
+/logs/
+*.log
+*.dump
+*.backup
+*.db
+*.sqlite
+*.sqlite3
 **/instance/
 /.pytest-run-*/
 /pytest-cache-files-*/
@@ -26,3 +50,4 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+Desktop.ini
