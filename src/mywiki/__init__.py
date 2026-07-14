@@ -5,6 +5,8 @@ from uuid import uuid4
 import click
 from dotenv import load_dotenv
 from flask import Flask, g, render_template, request
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import TimeoutError as SQLAlchemyTimeoutError
 
 from .extensions import csrf, db, limiter, login_manager, migrate
 
@@ -15,7 +17,11 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     from .config import CONFIGS
 
-    env_name = os.getenv("APP_ENV", "development")
+    env_name = (
+        "testing"
+        if test_config and test_config.get("TESTING")
+        else os.getenv("APP_ENV", "development")
+    )
     config_class = CONFIGS.get(env_name, CONFIGS["development"])
 
     app = Flask(
@@ -87,6 +93,17 @@ def register_request_hooks(app: Flask) -> None:
 
 
 def register_error_handlers(app: Flask) -> None:
+    @app.errorhandler(OperationalError)
+    @app.errorhandler(SQLAlchemyTimeoutError)
+    def database_unavailable(error):
+        db.session.rollback()
+        app.logger.error(
+            "Database unavailable | request_id=%s error_type=%s",
+            g.get("request_id", ""),
+            type(error).__name__,
+        )
+        return render_template("errors/503.html"), 503
+
     @app.errorhandler(403)
     def forbidden(error):
         return render_template("errors/403.html"), 403
@@ -133,6 +150,17 @@ def register_cli(app: Flask) -> None:
         except MailDeliveryError as error:
             raise click.ClickException(str(error)) from error
         click.echo(f"Test email accepted by the mail backend for {normalized_recipient}.")
+
+    @app.cli.command("check-smtp")
+    def check_smtp_command() -> None:
+        """Authenticate to SMTP without sending a message."""
+        from .services.mail import MailDeliveryError, check_smtp_connection
+
+        try:
+            check_smtp_connection()
+        except MailDeliveryError as error:
+            raise click.ClickException(str(error)) from error
+        click.echo("SMTP connection and authentication succeeded; no email was sent.")
 
     @app.shell_context_processor
     def shell_context() -> dict:

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}서비스를 잠시 사용할 수 없습니다 — MyWiki{% endblock %}
+
+{% block content %}
+<section class="error-page mx-auto text-center">
+    <span class="error-code">503</span>
+    <h1 class="h2">데이터베이스 연결을 확인하고 있습니다.</h1>
+    <p class="text-body-secondary mt-3">
+        잠시 후 다시 시도해 주세요. 개발 환경이라면 PostgreSQL 컨테이너가 healthy 상태인지 확인하세요.
+    </p>
+    <a class="btn btn-primary mt-3" href="{{ url_for('main.index') }}">다시 시도</a>
+</section>
+{% endblock %}

@@ -17,6 +17,7 @@ def app(tmp_path):
             "SQLALCHEMY_DATABASE_URI": f"sqlite:///{database_path.as_posix()}",
             "WTF_CSRF_ENABLED": False,
             "RATELIMIT_ENABLED": False,
+            "MAIL_BACKEND": "console",
             "SERVER_NAME": "localhost",
         }
     )

@@ -1,8 +1,8 @@
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import or_
 
-from ..extensions import db
+from ..extensions import db, limiter
 from ..models import Document, DocumentPermission, DocumentRevision, Tag, User
 from ..services.audit import record_event
 from ..services.authorization import (
@@ -39,6 +39,18 @@ def _document_url(document: Document) -> str:
         owner_username=document.wiki.owner.username,
         document_id=document.id,
     )
+
+
+@bp.post("/documents/preview")
+@login_required
+@limiter.limit("60 per minute")
+def preview():
+    source = request.form.get("body_markdown", "")
+    if len(source) > 1_000_000:
+        abort(413)
+    response = jsonify(html=str(render_markdown(source)))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @bp.route("/documents/new", methods=["GET", "POST"])

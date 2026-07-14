@@ -8,6 +8,68 @@ def detail_url(document):
     return f"/w/{document.wiki.owner.username}/docs/{document.id}"
 
 
+def test_markdown_preview_requires_login(client):
+    response = client.post("/documents/preview", data={"body_markdown": "# 비공개"})
+
+    assert response.status_code == 302
+    assert "/auth/login" in response.headers["Location"]
+
+
+def test_markdown_preview_rejects_missing_csrf_when_enabled(app, client):
+    with app.app_context():
+        create_user("alice")
+
+    login(client, "alice")
+    app.config["WTF_CSRF_ENABLED"] = True
+
+    response = client.post("/documents/preview", data={"body_markdown": "# 초안"})
+
+    assert response.status_code == 400
+
+
+def test_markdown_preview_renders_safely_without_saving(app, client):
+    with app.app_context():
+        create_user("alice")
+
+    login(client, "alice")
+    response = client.post(
+        "/documents/preview",
+        data={
+            "body_markdown": (
+                "# 미리보기\n\n**굵은 글씨**\n\n"
+                "<script>alert('unsafe')</script>\n\n"
+                "[위험한 링크](javascript:alert('unsafe'))"
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["Cache-Control"] == "no-store"
+    rendered = response.get_json()["html"]
+    assert "<h1>미리보기</h1>" in rendered
+    assert "<strong>굵은 글씨</strong>" in rendered
+    assert "<script" not in rendered
+    assert 'href="javascript:' not in rendered
+    with app.app_context():
+        assert db.session.scalar(db.select(db.func.count()).select_from(Document)) == 0
+        assert db.session.scalar(db.select(db.func.count()).select_from(DocumentRevision)) == 0
+
+
+def test_document_form_exposes_preview_controls(app, client):
+    with app.app_context():
+        create_user("alice")
+
+    login(client, "alice")
+    response = client.get("/documents/new")
+    page = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "data-markdown-preview" in page
+    assert "data-markdown-source" in page
+    assert "미리보기" in page
+    assert "/documents/preview" in page
+
+
 def test_unrelated_member_cannot_discover_document(app, client):
     with app.app_context():
         alice = create_user("alice")

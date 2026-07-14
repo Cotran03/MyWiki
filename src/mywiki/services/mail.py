@@ -1,5 +1,7 @@
 import smtplib
 import ssl
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from email.headerregistry import Address
 from email.message import EmailMessage
@@ -49,6 +51,15 @@ def send_test_message(recipient: str) -> None:
         action_label="MyWiki 열기",
         explanation="MyWiki SMTP 설정이 정상적으로 동작하고 있습니다.",
     )
+
+
+def check_smtp_connection() -> None:
+    if current_app.config["MAIL_BACKEND"] != "smtp":
+        raise MailDeliveryError("MAIL_BACKEND must be smtp to check the SMTP connection.")
+    with _smtp_client() as client:
+        response_code, response = client.noop()
+        if response_code != 250:
+            raise smtplib.SMTPResponseException(response_code, response)
 
 
 def _action_url(endpoint: str, **values: str) -> str:
@@ -115,6 +126,7 @@ def _build_message(
         "explanation": explanation,
         "action_url": action_url,
         "action_label": action_label,
+        "brand_image_url": f"{current_app.config['BASE_URL']}/static/img/MyWiki.png",
     }
     message.set_content(render_template("emails/action.txt", **context))
     message.add_alternative(render_template("emails/action.html", **context), subtype="html")
@@ -122,6 +134,12 @@ def _build_message(
 
 
 def _send_smtp(message: EmailMessage) -> None:
+    with _smtp_client() as client:
+        client.send_message(message)
+
+
+@contextmanager
+def _smtp_client() -> Iterator[smtplib.SMTP]:
     context = ssl.create_default_context()
     server = current_app.config["MAIL_SERVER"]
     port = current_app.config["MAIL_PORT"]
@@ -147,7 +165,7 @@ def _send_smtp(message: EmailMessage) -> None:
                 current_app.config["MAIL_USERNAME"],
                 current_app.config["MAIL_PASSWORD"],
             )
-            client.send_message(message)
+            yield client
     except (OSError, smtplib.SMTPException) as error:
         raise MailDeliveryError(
             "SMTP 서버가 메일을 받지 못했습니다. 서버 주소와 앱 비밀번호를 확인해 주세요."

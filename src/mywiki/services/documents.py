@@ -20,6 +20,7 @@ def create_document(
     body_markdown: str,
     tags: str = "",
     summary: str = "",
+    commit: bool = True,
 ) -> Document:
     document = Document(
         wiki=wiki,
@@ -43,7 +44,8 @@ def create_document(
     )
     _sync_tags(document, tags)
     record_event("document.create", "document", document.id)
-    db.session.commit()
+    if commit:
+        db.session.commit()
     return document
 
 

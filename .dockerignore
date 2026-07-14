@@ -6,6 +6,7 @@
 .flaskenv
 .pgpass
 *.key
+*.pem
 *.p12
 *.pfx
 .venv
@@ -13,7 +14,7 @@
 **/*.py[cod]
 **/*.egg-info
 .tmp
-.pytest-run-*
+.pytest-*
 pytest-cache-files-*
 .pytest_cache
 .ruff_cache

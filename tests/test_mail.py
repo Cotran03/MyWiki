@@ -33,6 +33,10 @@ class FakeSMTP:
         self.calls.append(("send_message",))
         self.message = message
 
+    def noop(self):
+        self.calls.append(("noop",))
+        return 250, b"OK"
+
 
 def configure_smtp(app):
     app.config.update(
@@ -80,6 +84,7 @@ def test_smtp_verification_email_uses_tls_and_trusted_base_url(app, monkeypatch)
     expected_url = "https://wiki.example/auth/verify/secret-token"
     assert expected_url in plain_body
     assert expected_url in html_body
+    assert "https://wiki.example/static/img/MyWiki.png" in html_body
     assert "evil.example" not in plain_body
 
 
@@ -108,3 +113,23 @@ def test_send_test_email_cli_uses_configured_backend(app, monkeypatch):
     assert result.exit_code == 0
     assert "recipient@example.com" in result.output
     assert FakeSMTP.instances[-1].message["To"] == "recipient@example.com"
+
+
+def test_check_smtp_cli_authenticates_without_sending_email(app, monkeypatch):
+    FakeSMTP.instances.clear()
+    configure_smtp(app)
+    monkeypatch.setattr(mail_service.smtplib, "SMTP", FakeSMTP)
+
+    result = app.test_cli_runner().invoke(args=["check-smtp"])
+
+    assert result.exit_code == 0
+    assert "no email was sent" in result.output
+    smtp = FakeSMTP.instances[-1]
+    assert [call[0] for call in smtp.calls] == [
+        "ehlo",
+        "starttls",
+        "ehlo",
+        "login",
+        "noop",
+    ]
+    assert smtp.message is None

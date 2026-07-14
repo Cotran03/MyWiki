@@ -4,6 +4,14 @@
 
 {% block content %}
 <section class="hero-section text-center mx-auto">
+    <img
+        class="hero-brand-image"
+        src="{{ url_for('static', filename='img/MyWiki.png') }}"
+        width="180"
+        height="180"
+        alt="문서와 지식의 연결을 표현한 MyWiki 공식 이미지"
+        fetchpriority="high"
+    >
     <div class="hero-eyebrow">PRIVATE KNOWLEDGE, SHARED WITH INTENT</div>
     <h1 class="display-4 fw-bold text-balance">생각은 자유롭게 기록하고,<br>필요한 문서만 함께 보세요.</h1>
     <p class="lead text-body-secondary mx-auto mt-4">

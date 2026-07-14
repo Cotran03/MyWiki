@@ -14,6 +14,7 @@ from ..services.mail import (
     send_verification_message,
 )
 from ..services.passwords import hash_password, needs_rehash, verify_password
+from ..services.starter_documents import create_starter_documents
 from ..services.tokens import consume_token, find_valid_token, issue_token
 from . import bp
 from .forms import EmailRequestForm, EmptyForm, LoginForm, RegisterForm, ResetPasswordForm
@@ -72,8 +73,10 @@ def register():
         )
         db.session.add(user)
         db.session.flush()
-        db.session.add(Wiki(owner=user, name=f"{user.display_name}의 위키"))
+        wiki = Wiki(owner=user, name=f"{user.display_name}의 위키")
+        db.session.add(wiki)
         record_event("auth.register", "user", user.id, actor_id=user.id)
+        create_starter_documents(wiki, user)
         db.session.commit()
 
         raw_token = issue_token(

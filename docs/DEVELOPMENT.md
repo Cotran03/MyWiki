@@ -57,6 +57,10 @@ py -3.14 -m venv .venv
 APP_ENV=development
 SECRET_KEY=dev-local-only-change-before-deploy
 DATABASE_URL=postgresql+psycopg://mywiki:mywiki@localhost:5433/mywiki
+DATABASE_CONNECT_TIMEOUT_SECONDS=5
+DATABASE_STATEMENT_TIMEOUT_MS=15000
+DATABASE_LOCK_TIMEOUT_MS=5000
+DATABASE_POOL_TIMEOUT_SECONDS=5
 BASE_URL=http://127.0.0.1:5000
 MAIL_BACKEND=console
 MAIL_SERVER=smtp.gmail.com
@@ -124,6 +128,14 @@ MAIL_TIMEOUT_SECONDS=10
 ```
 
 Gmail은 일반 계정 비밀번호를 SMTP 비밀번호로 받지 않습니다. 발신 주소는 인증한 Gmail 주소와 같게 두는 것이 안전합니다. Google의 서버·포트 안내는 [Gmail SMTP 공식 문서](https://support.google.com/a/answer/176600?hl=ko)에서 확인할 수 있습니다.
+
+MyWiki는 Gmail 앱 비밀번호에 표시되는 공백을 자동으로 제거하고, Gmail 사용 시 발신 주소를 인증한 `MAIL_USERNAME`과 동일하게 사용합니다.
+
+메일을 보내지 않고 연결과 인증만 먼저 검사할 수 있습니다.
+
+```powershell
+.venv\Scripts\flask --app wsgi:app check-smtp
+```
 
 앱을 다시 시작한 다음 자신에게 테스트 메일을 보냅니다.
 

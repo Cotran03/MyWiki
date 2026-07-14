@@ -27,6 +27,7 @@ htmlcov/
 .flaskenv
 .pgpass
 *.key
+*.pem
 *.p12
 *.pfx
 
@@ -42,7 +43,7 @@ htmlcov/
 *.sqlite
 *.sqlite3
 **/instance/
-/.pytest-run-*/
+/.pytest-*/
 /pytest-cache-files-*/
 
 # IDE / OS

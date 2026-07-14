@@ -24,21 +24,42 @@ def _database_url() -> str:
     return value
 
 
+def _trimmed_env(name: str) -> str | None:
+    value = os.getenv(name)
+    if value is None:
+        return None
+    return value.strip() or None
+
+
+def _mail_password() -> str | None:
+    value = os.getenv("MAIL_PASSWORD")
+    if not value:
+        return None
+    server = os.getenv("MAIL_SERVER", "smtp.gmail.com").strip().lower()
+    if server == "smtp.gmail.com":
+        return "".join(value.split()) or None
+    return value
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
     SQLALCHEMY_DATABASE_URI = _database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
+    DATABASE_CONNECT_TIMEOUT_SECONDS = int(os.getenv("DATABASE_CONNECT_TIMEOUT_SECONDS", "5"))
+    DATABASE_STATEMENT_TIMEOUT_MS = int(os.getenv("DATABASE_STATEMENT_TIMEOUT_MS", "15000"))
+    DATABASE_LOCK_TIMEOUT_MS = int(os.getenv("DATABASE_LOCK_TIMEOUT_MS", "5000"))
+    DATABASE_POOL_TIMEOUT_SECONDS = int(os.getenv("DATABASE_POOL_TIMEOUT_SECONDS", "5"))
 
     BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:5000").rstrip("/")
     MAIL_BACKEND = os.getenv("MAIL_BACKEND", "console").strip().lower()
-    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com").strip()
     MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
     MAIL_USE_TLS = _env_bool("MAIL_USE_TLS", True)
     MAIL_USE_SSL = _env_bool("MAIL_USE_SSL", False)
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME") or None
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD") or None
-    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER") or MAIL_USERNAME
+    MAIL_USERNAME = _trimmed_env("MAIL_USERNAME")
+    MAIL_PASSWORD = _mail_password()
+    MAIL_DEFAULT_SENDER = _trimmed_env("MAIL_DEFAULT_SENDER") or MAIL_USERNAME
     MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "MyWiki")
     MAIL_TIMEOUT_SECONDS = int(os.getenv("MAIL_TIMEOUT_SECONDS", "10"))
     MAIL_SUBJECT_PREFIX = os.getenv("MAIL_SUBJECT_PREFIX", "[MyWiki]")
@@ -58,6 +79,40 @@ class Config:
     @classmethod
     def init_app(cls, app) -> None:
         Path(app.instance_path).mkdir(parents=True, exist_ok=True)
+
+        database_url = app.config["SQLALCHEMY_DATABASE_URI"]
+        if database_url.startswith("postgresql"):
+            timeout_settings = {
+                "DATABASE_CONNECT_TIMEOUT_SECONDS": app.config["DATABASE_CONNECT_TIMEOUT_SECONDS"],
+                "DATABASE_STATEMENT_TIMEOUT_MS": app.config["DATABASE_STATEMENT_TIMEOUT_MS"],
+                "DATABASE_LOCK_TIMEOUT_MS": app.config["DATABASE_LOCK_TIMEOUT_MS"],
+                "DATABASE_POOL_TIMEOUT_SECONDS": app.config["DATABASE_POOL_TIMEOUT_SECONDS"],
+            }
+            invalid = [name for name, value in timeout_settings.items() if value <= 0]
+            if invalid:
+                raise RuntimeError(f"Database timeouts must be positive: {', '.join(invalid)}")
+
+            engine_options = dict(app.config["SQLALCHEMY_ENGINE_OPTIONS"])
+            connect_args = dict(engine_options.get("connect_args", {}))
+            connect_args.setdefault(
+                "connect_timeout",
+                app.config["DATABASE_CONNECT_TIMEOUT_SECONDS"],
+            )
+            connect_args.setdefault(
+                "options",
+                "-c statement_timeout="
+                f"{app.config['DATABASE_STATEMENT_TIMEOUT_MS']} "
+                "-c lock_timeout="
+                f"{app.config['DATABASE_LOCK_TIMEOUT_MS']}",
+            )
+            engine_options.update(
+                {
+                    "connect_args": connect_args,
+                    "pool_recycle": 300,
+                    "pool_timeout": app.config["DATABASE_POOL_TIMEOUT_SECONDS"],
+                }
+            )
+            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options
 
         base_url = urlsplit(app.config["BASE_URL"])
         if (
@@ -86,6 +141,10 @@ class Config:
             missing = [name for name, value in required.items() if not value]
             if missing:
                 raise RuntimeError(f"SMTP configuration is missing: {', '.join(missing)}")
+            if app.config["MAIL_SERVER"].lower() == "smtp.gmail.com":
+                if len(app.config["MAIL_PASSWORD"]) != 16:
+                    raise RuntimeError("Gmail MAIL_PASSWORD must be a 16-character app password.")
+                app.config["MAIL_DEFAULT_SENDER"] = app.config["MAIL_USERNAME"]
             if not 1 <= app.config["MAIL_PORT"] <= 65535:
                 raise RuntimeError("MAIL_PORT must be between 1 and 65535.")
             if app.config["MAIL_TIMEOUT_SECONDS"] <= 0:
@@ -112,6 +171,10 @@ class TestingConfig(Config):
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False
     SQLALCHEMY_DATABASE_URI = "sqlite://"
+    MAIL_BACKEND = "console"
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
+    MAIL_DEFAULT_SENDER = None
 
 
 CONFIGS = {

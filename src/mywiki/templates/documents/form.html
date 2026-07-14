@@ -15,11 +15,52 @@
     {{ field(form.title) }}
     <div class="mb-3">
         {{ form.body_markdown.label(class="form-label fw-semibold") }}
-        {{ form.body_markdown(
-            class="form-control markdown-editor" + (" is-invalid" if form.body_markdown.errors else ""),
-            rows=18,
-            placeholder="# 제목\n\nMarkdown으로 내용을 작성하세요."
-        ) }}
+        <div
+            class="markdown-workspace"
+            data-markdown-preview
+            data-preview-url="{{ url_for('documents.preview') }}"
+        >
+            <div class="markdown-toolbar">
+                <div class="btn-group btn-group-sm" role="group" aria-label="본문 보기 방식">
+                    <button
+                        class="btn btn-outline-secondary active"
+                        type="button"
+                        aria-pressed="true"
+                        aria-controls="markdown-editor-panel"
+                        data-markdown-edit-button
+                    >
+                        작성
+                    </button>
+                    <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        aria-pressed="false"
+                        aria-controls="markdown-preview-panel"
+                        data-markdown-preview-button
+                    >
+                        미리보기
+                    </button>
+                </div>
+                <span class="markdown-preview-status" aria-live="polite" data-markdown-preview-status>
+                    미리보기는 저장되지 않습니다.
+                </span>
+            </div>
+            <div id="markdown-editor-panel" data-markdown-editor-panel>
+                {{ form.body_markdown(
+                    class="form-control markdown-editor" + (" is-invalid" if form.body_markdown.errors else ""),
+                    rows=18,
+                    placeholder="# 제목\n\nMarkdown으로 내용을 작성하세요.",
+                    data_markdown_source=""
+                ) }}
+            </div>
+            <div
+                class="wiki-content markdown-preview"
+                id="markdown-preview-panel"
+                tabindex="0"
+                hidden
+                data-markdown-preview-panel
+            ></div>
+        </div>
         {% for error in form.body_markdown.errors %}
             <div class="invalid-feedback d-block" role="alert">{{ error }}</div>
         {% endfor %}

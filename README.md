@@ -6,8 +6,8 @@
 
 - 이메일·비밀번호 회원가입, 이메일 인증, 로그인, 비밀번호 재설정
 - 개발용 콘솔 메일과 Gmail 호환 SMTP 실발송
-- 가입 시 개인 위키 하나 자동 생성
-- 안전한 Markdown 문서 작성·열람·수정
+- 가입 시 개인 위키와 `MyWiki 사용법`·`Markdown 사용법` 문서 자동 생성
+- 안전한 Markdown 문서 작성·미리보기·열람·수정
 - 태그, 최근 문서, 권한 범위 내 검색
 - 문서별 viewer/editor 공유와 권한 회수
 - 불변 revision 이력과 이전 버전 복구
@@ -44,6 +44,9 @@ docker compose exec db psql -U mywiki -d mywiki
 
 # SMTP 설정 확인 메일
 .venv\Scripts\flask --app wsgi:app send-test-email 내주소@example.com
+
+# 메일을 보내지 않고 SMTP 연결·인증만 확인
+.venv\Scripts\flask --app wsgi:app check-smtp
 
 # 마이그레이션 적용 및 모델과 스키마 일치 확인
 .venv\Scripts\flask --app wsgi:app db upgrade
